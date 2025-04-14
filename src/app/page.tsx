@@ -1,3 +1,4 @@
+import { TimelineFormDialog } from "@/components/timeline-form-dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar, Check, ClipboardList, FileDown } from "lucide-react";
 
@@ -16,7 +17,10 @@ export default function Home() {
         <p className="text-zinc-600 max-w-md mx-auto mt-6 mb-8">
           Responda apenas algumas perguntas e receba um plano de estudos com os assuntos mais cobrados com vídeos
         </p>
-        <Button className="bg-primary hover:bg-emerald-500 text-zinc-50 px-8" size="lg">Quero meu cronograma</Button>
+
+        <TimelineFormDialog>
+          <Button className="bg-primary hover:bg-emerald-500 text-zinc-50 px-8" size="lg">Quero meu cronograma</Button>
+        </TimelineFormDialog>
       </section>
 
       <section className="py-12">
@@ -97,7 +101,9 @@ export default function Home() {
         </div>
 
         <div className="flex justify-center">
-          <Button className="bg-primary hover:bg-emerald-500 px-8" size="lg">Começar agora</Button>
+          <TimelineFormDialog>
+            <Button className="bg-primary hover:bg-emerald-500 px-8" size="lg">Começar agora</Button>
+          </TimelineFormDialog>
         </div>
       </section>
     </main>
