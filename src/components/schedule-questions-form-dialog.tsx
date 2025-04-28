@@ -19,18 +19,21 @@ import {
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import { generateSchedule } from "@/actions/generate-schedule"
+import enemContents from '@/data/enem-contents.json'
+import { writeFile } from "node:fs"
 
 const formSchema = z.object({
-  daysPerWeek: z.string({
+  daysPerWeek: z.coerce.number({
     required_error: "Selecione quantos dias por semana você pode estudar.",
   }),
-  hoursPerDay: z.string({
+  hoursPerDay: z.coerce.number({
     required_error: "Selecione quantas horas por dia você pode estudar.",
   }),
-  hardSubjects: z.array(z.string()).min(1, {
+  harderSubjects: z.array(z.string()).min(1, {
     message: "Selecione pelo menos uma matéria.",
   }),
-  enemAreaFocus: z.string().optional(),
+  preferredArea: z.string().optional(),
 })
 
 const subjects = [
@@ -46,18 +49,20 @@ const subjects = [
   { id: "essay", label: "Redação" },
 ]
 
-export function TimelineFormDialog({ children }: { children: React.ReactNode }) {
+export function ScheduleQuestionsFormDialog({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      hardSubjects: [],
+      harderSubjects: [],
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const schedule = generateSchedule(values, enemContents)
+
+    console.log('schedule', JSON.stringify(schedule, null, 2))
     setOpen(false)
     form.reset()
   }
@@ -80,7 +85,7 @@ export function TimelineFormDialog({ children }: { children: React.ReactNode }) 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Quantos dias por semana você pode estudar para o ENEM?</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione os dias" />
@@ -106,7 +111,7 @@ export function TimelineFormDialog({ children }: { children: React.ReactNode }) 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Quantas horas por dia?</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecione as horas" />
@@ -126,7 +131,7 @@ export function TimelineFormDialog({ children }: { children: React.ReactNode }) 
 
             <FormField
               control={form.control}
-              name="hardSubjects"
+              name="harderSubjects"
               render={() => (
                 <FormItem>
                   <div className="mb-4">
@@ -138,7 +143,7 @@ export function TimelineFormDialog({ children }: { children: React.ReactNode }) 
                       <FormField
                         key={subject.id}
                         control={form.control}
-                        name="hardSubjects"
+                        name="harderSubjects"
                         render={({ field }) => {
                           return (
                             <FormItem key={subject.id} className="flex flex-row items-start space-x-3 space-y-0">
@@ -166,7 +171,7 @@ export function TimelineFormDialog({ children }: { children: React.ReactNode }) 
 
             <FormField
               control={form.control}
-              name="enemAreaFocus"
+              name="preferredArea"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Se tivesse que focar mais em uma área, qual seria? (opcional)</FormLabel>
