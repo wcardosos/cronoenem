@@ -24,7 +24,9 @@ export default function RootLayout({
         className={`${rubikFont.variable} antialiased`}
       >
         <Header />
-        {children}
+        <div className="max-w-5xl min-h-screen mx-auto px-6 xl:px-0">
+          {children}
+        </div>
       </body>
     </html>
   );

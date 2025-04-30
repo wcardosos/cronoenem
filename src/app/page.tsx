@@ -4,7 +4,7 @@ import { Calendar, Check, ClipboardList, FileDown } from "lucide-react";
 
 export default function Home() {
   return (
-    <main className="max-w-5xl min-h-screen mx-auto px-6 xl:px-0">
+    <main>
       <section className="py-12 text-center">
         <h2 className="text-zinc-800 text-4xl font-medium mb-2">
           Ganhe um

@@ -1,42 +1,13 @@
 'use server'
 import { getWeeksUntilEnem } from "@/lib/enem";
-import { writeFile } from "node:fs";
+import { Content, DailySchedule, QuizAnswers, Schedule } from "@/models/schedule";
 
-interface QuizAnswers {
-  daysPerWeek: number;
-  hoursPerDay: number;
-  harderSubjects: string[];
-  preferredArea?: string;
-}
-
-interface Content {
-  topic: string;
-  subject: string;
-  area: string;
-}
-
-interface DailySchedule {
-  day: string;
-  contents: Content[];
-}
-
-interface WeeklySchedule {
-  week: number;
-  days: DailySchedule[];
-}
-
-type Schedule = WeeklySchedule[];
-
-/**
- * Generates a personalized study schedule based on quiz answers.
- */
 export async function generateSchedule(answers: QuizAnswers, content: Content[]): Promise<Schedule> {
   const weeksUntilExam = getWeeksUntilEnem();
   const weeklyLoad = answers.daysPerWeek * answers.hoursPerDay;
   const minutesPerTopic = 30;
   const contentsPerWeek = Math.floor((weeklyLoad * 60) / minutesPerTopic);
 
-  // Split content into categories
   const harderSubjects = content.filter(c => answers.harderSubjects.includes(c.subject));
   const preferred = answers.preferredArea
     ? content.filter(c => c.area === answers.preferredArea)
@@ -51,7 +22,6 @@ export async function generateSchedule(answers: QuizAnswers, content: Content[])
   const availableDays = daysOfWeek.slice(0, answers.daysPerWeek);
   const contentsPerDay = Math.floor(contentsPerWeek / answers.daysPerWeek);
 
-  console.log('weeks until exam', weeksUntilExam)
   for (let week = 1; week <= weeksUntilExam; week++) {
     const weekDays: DailySchedule[] = [];
 
@@ -91,10 +61,5 @@ export async function generateSchedule(answers: QuizAnswers, content: Content[])
     });
   }
 
-  writeFile('schedule.json', JSON.stringify(schedule, null, 2), (err) => {
-    if (err) {
-      console.error(err);
-    }
-  })
   return schedule;
 }

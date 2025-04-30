@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { set, useForm } from "react-hook-form"
 import * as z from "zod"
 
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { generateSchedule } from "@/actions/generate-schedule"
 import enemContents from '@/data/enem-contents.json'
-import { writeFile } from "node:fs"
+import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const formSchema = z.object({
   daysPerWeek: z.coerce.number({
@@ -50,7 +51,9 @@ const subjects = [
 ]
 
 export function ScheduleQuestionsFormDialog({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -60,11 +63,21 @@ export function ScheduleQuestionsFormDialog({ children }: { children: React.Reac
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const schedule = generateSchedule(values, enemContents)
-
-    console.log('schedule', JSON.stringify(schedule, null, 2))
-    setOpen(false)
-    form.reset()
+    setIsLoading(true);
+    try {
+      const schedule = await generateSchedule(values, enemContents)
+      console.log('generated schedule', schedule)
+      sessionStorage.setItem("cronoenem:schedule", JSON.stringify(schedule))
+      
+      setOpen(false)
+      form.reset()
+      router.push("/cronograma")
+    } catch (error) {
+      console.error(error)
+      alert("Ocorreu um erro ao gerar o cronograma. Por favor, tente novamente.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -195,7 +208,8 @@ export function ScheduleQuestionsFormDialog({ children }: { children: React.Reac
               )}
             />
 
-            <Button type="submit" className="w-full bg-primary hover:bg-emerald-500">
+            <Button type="submit" className="w-full bg-primary hover:bg-emerald-500" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Gerar meu cronograma
             </Button>
           </form>
