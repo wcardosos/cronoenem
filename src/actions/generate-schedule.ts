@@ -18,8 +18,26 @@ export async function generateSchedule(answers: QuizAnswers, content: Content[])
 
   const schedule: Schedule = [];
 
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const availableDays = daysOfWeek.slice(0, answers.daysPerWeek);
+  const weekDaysOnly = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  const weekend = ["Saturday", "Sunday"];
+  const daysOfWeek = [...weekDaysOnly, ...weekend];
+
+  function getDistributedDays(daysPerWeek: number): string[] {
+    let baseDays = weekDaysOnly;
+    if (daysPerWeek > weekDaysOnly.length) {
+      baseDays = daysOfWeek;
+    }
+    
+    const step = (baseDays.length - 1) / (daysPerWeek - 1);
+    const result: string[] = [];
+    for (let i = 0; i < daysPerWeek; i++) {
+      result.push(baseDays[Math.round(i * step)]);
+    }
+
+    return Array.from(new Set(result));
+  }
+
+  const availableDays = getDistributedDays(answers.daysPerWeek);
   const contentsPerDay = Math.floor(contentsPerWeek / answers.daysPerWeek);
 
   for (let week = 1; week <= weeksUntilExam; week++) {
