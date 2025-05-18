@@ -1,29 +1,26 @@
 'use client'
 
 import { ScheduleContent } from "@/components/schedule-content";
-import { Schedule as ScheduleModel } from "@/models/schedule";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useScheduleStore } from "@/store/schedule";
 
 export default function Schedule() {
-  const [schedule, setSchedule] = useState<ScheduleModel | null>();
+  const schedule = useScheduleStore(state => state.schedule);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     setIsLoading(true);
 
-    const scheduleSaved = sessionStorage.getItem('cronoenem:schedule');
-    console.log(scheduleSaved);
-    if (scheduleSaved === null) {
+    console.log('schedule', schedule);
+    if (!schedule) {
       router.push('/');
-    } else {
-      setSchedule(JSON.parse(scheduleSaved));
     }
     
     setIsLoading(false);
-  }, []);
+  }, [schedule, router]);
 
   return (
     <main>
@@ -41,7 +38,7 @@ export default function Schedule() {
           </div>
 
           <div className="mt-10">
-            <ScheduleContent schedule={schedule!} />
+            <ScheduleContent schedule={schedule} />
           </div>
         </>
       )}

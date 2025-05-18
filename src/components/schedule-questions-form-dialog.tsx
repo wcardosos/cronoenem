@@ -6,6 +6,7 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { useScheduleStore } from "@/store/schedule";
 
 import { Button } from "@/components/ui/button"
 import {
@@ -54,6 +55,7 @@ export function ScheduleQuestionsFormDialog({ children }: { children: React.Reac
   const [open, setOpen] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const router = useRouter();
+  const setSchedule = useScheduleStore(state => state.setSchedule);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -66,8 +68,7 @@ export function ScheduleQuestionsFormDialog({ children }: { children: React.Reac
     setIsLoading(true);
     try {
       const schedule = await generateSchedule(values, enemContents)
-      console.log('generated schedule', schedule)
-      sessionStorage.setItem("cronoenem:schedule", JSON.stringify(schedule))
+      setSchedule(schedule)
       
       setOpen(false)
       form.reset()
