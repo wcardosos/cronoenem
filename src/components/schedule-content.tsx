@@ -36,7 +36,7 @@ export function ScheduleContent({ schedule }: Readonly<ScheduleContentProps>) {
         return;
       }
   
-      const response = await fetch('http://localhost:3333/pdf', {
+      const response = await fetch('http://localhost:3333/schedules/pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ htmlContent: element.innerHTML }),
