@@ -14,7 +14,6 @@ export default function Schedule() {
   useEffect(() => {
     setIsLoading(true);
 
-    console.log('schedule', schedule);
     if (!schedule) {
       router.push('/');
     }

@@ -1,12 +1,20 @@
 import { Schedule } from "@/models/schedule";
 import { Logo } from "./logo";
 import { Button } from "./ui/button";
+import { Download, Loader2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useReward } from 'react-rewards';
 
 interface ScheduleContentProps {
   schedule: Schedule
 }
 
 export function ScheduleContent({ schedule }: Readonly<ScheduleContentProps>) {
+  const [isDownloadingPDF, setIsDownloadingPDF] = useState<boolean>(false);
+  const { reward } = useReward('juicy', 'confetti')
+
   const daysMapped: Record<string, string> = {
     'Sunday': 'Domingo',
     'Monday': 'Segunda',
@@ -19,43 +27,70 @@ export function ScheduleContent({ schedule }: Readonly<ScheduleContentProps>) {
 
   // TODO: refatorar para uma server action
   const downloadPDF = async () => {
-    const element = document.getElementById('schedule');
-    if (!element) {
-      console.warn('Elemento do cronograma não encontrado');
-      return;
+    setIsDownloadingPDF(true);
+
+    try {
+      const element = document.getElementById('schedule');
+      if (!element) {
+        console.warn('Elemento do cronograma não encontrado');
+        return;
+      }
+  
+      const response = await fetch('http://localhost:3333/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ htmlContent: element.innerHTML }),
+      });
+  
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'Cronograma de estudos - cronoenem.pdf'
+      a.click()
+      URL.revokeObjectURL(url)
+      a.remove()
+
+      reward();
+      toast.success('PDF baixado com sucesso!', {
+        description: 'Seu cronograma foi baixado com sucesso.',
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error('Erro ao baixar o PDF:', error);
+      toast.error('Ocorreu um erro ao baixar o PDF. Por favor, tente novamente em alguns instantes.');
+    } finally {
+      setIsDownloadingPDF(false);
     }
-
-    const response = await fetch('http://localhost:3333/pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ htmlContent: element.innerHTML }),
-    });
-
-    const blob = await response.blob()
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'Cronograma de estudos - cronoenem.pdf'
-    a.click()
-    URL.revokeObjectURL(url)
-    a.remove()
   }
 
   return (
-    <div id="schedule" className="w-full p-6 bg-emerald-50">
-      <header className="flex justify-center">
-        <Logo />
-      </header>
-
-      <section className="my-6">
-        <strong className="text-primary">Cronograma de estudos para o ENEM</strong>
-        <span className="block text-xs text-zinc-500">Data de criação: {new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: '2-digit', year: 'numeric' })}</span>
-      </section>
-
-      <div>
-        <div className="fixed right-16 lg:right-32 bottom-6 mx-auto">
-          <Button onClick={downloadPDF}>Baixar cronograma</Button>
+    <div>
+      <div className="flex w-full justify-end">
+        <div className="fixed flex lg:top-auto bottom-[5%] lg:bottom-auto z-10 pr-2 pt-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button onClick={downloadPDF} disabled={isDownloadingPDF}>
+                  Baixar {isDownloadingPDF ? <Loader2 className="animate-spin h-4 w-4" /> : <Download /> }
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Baixar cronograma</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <span id="juicy" />
         </div>
+      </div>
+      <div id="schedule" className="w-full p-6 bg-emerald-50">
+        <header className="flex justify-center">
+          <Logo />
+        </header>
+
+        <section className="my-6">
+          <strong className="text-primary">Cronograma de estudos para o ENEM</strong>
+          <span className="block text-xs text-zinc-500">Data de criação: {new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: '2-digit', year: 'numeric' })}</span>
+        </section>
+
         <div className="grid gap-6 w-full overflow-x-auto">
           {schedule.map(weekSchedule => (
             <div key={weekSchedule.week} className="flex flex-col gap-4">
