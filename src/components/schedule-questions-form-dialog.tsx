@@ -67,15 +67,7 @@ export function ScheduleQuestionsFormDialog({ children }: { children: React.Reac
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:3333/schedules", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
-
-      const schedule = await response.json();
+      const schedule = await generateSchedule(values);
       setSchedule(schedule)
       
       setOpen(false)

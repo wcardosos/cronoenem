@@ -2,7 +2,24 @@
 import { getWeeksUntilEnem } from "@/lib/enem";
 import { Content, DailySchedule, QuizAnswers, Schedule } from "@/models/schedule";
 
-export async function generateSchedule(answers: QuizAnswers, content: Content[]): Promise<Schedule> {
+export async function generateSchedule(answers: QuizAnswers): Promise<Schedule> {
+  const response = await fetch(`${process.env.API_URL}/schedules`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      'X-API-Key': process.env.API_KEY || '',
+    },
+    body: JSON.stringify(answers),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to generate schedule");
+  }
+
+  return response.json();
+}
+
+/*export async function generateSchedule(answers: QuizAnswers, content: Content[]): Promise<Schedule> {
   const weeksUntilExam = getWeeksUntilEnem();
   const weeklyLoad = answers.daysPerWeek * answers.hoursPerDay;
   const minutesPerTopic = 30;
@@ -80,4 +97,4 @@ export async function generateSchedule(answers: QuizAnswers, content: Content[])
   }
 
   return schedule;
-}
+}*/

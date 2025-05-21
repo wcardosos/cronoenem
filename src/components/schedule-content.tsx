@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/t
 import { useState } from "react";
 import { toast } from "sonner";
 import { useReward } from 'react-rewards';
+import { generateSchedulePDF } from "@/actions/generate-schedule-pdf";
 
 interface ScheduleContentProps {
   schedule: Schedule
@@ -25,7 +26,6 @@ export function ScheduleContent({ schedule }: Readonly<ScheduleContentProps>) {
     'Saturday': 'Sábado',
   }
 
-  // TODO: refatorar para uma server action
   const downloadPDF = async () => {
     setIsDownloadingPDF(true);
 
@@ -36,13 +36,8 @@ export function ScheduleContent({ schedule }: Readonly<ScheduleContentProps>) {
         return;
       }
   
-      const response = await fetch('http://localhost:3333/schedules/pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ htmlContent: element.innerHTML }),
-      });
-  
-      const blob = await response.blob()
+      const blob = await generateSchedulePDF(element.innerHTML);
+      
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
