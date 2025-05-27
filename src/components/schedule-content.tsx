@@ -7,6 +7,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useReward } from 'react-rewards';
 import { generateSchedulePDF } from "@/actions/generate-schedule-pdf";
+import { trackEventWhenReady } from "@/lib/umami";
 
 interface ScheduleContentProps {
   schedule: Schedule
@@ -47,6 +48,7 @@ export function ScheduleContent({ schedule }: Readonly<ScheduleContentProps>) {
       a.remove()
 
       reward();
+      trackEventWhenReady("ScheduleDownloaded");
       toast.success('PDF baixado com sucesso!', {
         description: 'Seu cronograma foi baixado com sucesso.',
         duration: 3000,
