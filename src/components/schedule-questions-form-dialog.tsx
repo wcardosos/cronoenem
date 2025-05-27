@@ -21,9 +21,9 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { generateSchedule } from "@/actions/generate-schedule"
-import enemContents from '@/data/enem-contents.json'
 import { Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { trackEventWhenReady } from "@/lib/umami"
 
 const formSchema = z.object({
   daysPerWeek: z.coerce.number({
@@ -72,6 +72,7 @@ export function ScheduleQuestionsFormDialog({ children }: { children: React.Reac
       
       setOpen(false)
       form.reset()
+      trackEventWhenReady("ScheduleGenerated");
       router.push("/cronograma")
     } catch (error) {
       console.error(error)
@@ -81,8 +82,20 @@ export function ScheduleQuestionsFormDialog({ children }: { children: React.Reac
     }
   }
 
+  const onOpenChange = (open: boolean) => {
+    if (!open) {
+      form.reset();
+    }
+
+    setOpen(open);
+
+    if (open) {
+      trackEventWhenReady("ScheduleDialogOpened");
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
