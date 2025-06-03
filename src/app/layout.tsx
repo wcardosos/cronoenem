@@ -21,6 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br">
+      <head>
+        <script async src="https://umami-sand-omega.vercel.app/script.js" data-website-id={process.env.UMAMI_WEBSITE_ID}></script>
+      </head>
       <body
         className={`${rubikFont.variable} antialiased`}
       >
